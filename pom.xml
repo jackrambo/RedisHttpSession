@@ -2,22 +2,26 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>zh.redis</groupId>
   <artifactId>RedisHttpSession</artifactId>
-  <version>0.0.1</version>
-  <packaging>war</packaging>
+  <version>1.5.201607-release</version>
+  <!--<packaging>war</packaging>-->
+	<packaging>war</packaging>
   <description>Distributed HttpSession Managerment FrameWork Based on Redis</description>
-  
-	<distributionManagement>
-    <repository>
-		<id>central</id>  
-    	<name>Maven Repository Switchboard</name>  
-      <url>http://repo1.maven.org/maven2/</url>
-    </repository>
-  </distributionManagement>
-  
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-  
+    <properties>
+        <nexus_url>http://192.168.1.13:8081/nexus</nexus_url>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>thirdparty</id>
+            <url>${nexus_url}/content/repositories/thirdparty/</url>
+        </repository>
+        <snapshotRepository>
+            <id>central</id>
+            <url>${nexus_url}/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
   <dependencies>
   	<dependency>
   		<groupId>commons-pool</groupId>
@@ -50,6 +54,12 @@
 		<version>6.0</version>
 		<scope>provided</scope>
 	</dependency>
+	  <dependency>
+		  <groupId>commons-codec</groupId>
+		  <artifactId>commons-codec</artifactId>
+		  <version>1.10</version>
+	  </dependency>
+
   </dependencies>
 	<build>
 		<plugins>
@@ -69,6 +79,19 @@
 				  </configuration>
 
 			</plugin>
+			<!-- tomcat7插件 -->
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<port>8080</port>
+					<path>/</path>
+					<uriEncoding>UTF-8</uriEncoding>
+				</configuration>
+			</plugin>
 		</plugins>
+
 	</build>
+
 </project>

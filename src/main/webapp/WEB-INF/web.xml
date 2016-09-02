@@ -10,12 +10,19 @@
 		<init-param>
 			<!-- Redis 服务地址 必须-->
 			<param-name>host</param-name>
-			<param-value>112.124.26.82;142.121.129.137</param-value>
+			<!--<param-value>112.124.26.82;142.121.129.137</param-value>-->
+			<param-value>127.0.0.1</param-value>
 		</init-param>
 		<init-param>
 			<!-- Redis 服务端口 必须 (端口与上面的IP地址一一对应)-->
 			<param-name>port</param-name>
-			<param-value>6379;6379</param-value>
+			<!--<param-value>6379;6379</param-value>-->
+			<param-value>6379</param-value>
+		</init-param>
+		<init-param>
+			<!-- 共享cookies的主域名，选填 -->
+			<param-name>cookiesDomain</param-name>
+			<param-value>.xxx.com</param-value>
 		</init-param>
 		<init-param>
 			<!-- Session过期时间（秒）可选 -->

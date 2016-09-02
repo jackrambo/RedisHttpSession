@@ -9,10 +9,12 @@ import javax.servlet.http.HttpServletResponse;
 import zh.redis.RedisClient;
 import zh.redis.RedisSimpleTempalte;
 import org.apache.commons.lang.StringUtils;
+import zh.redis.utils.AES;
 
 public class RedisSessionManager {
 	public static final String SESSION_ID_PREFIX = "RJSID_";
 	public static final String SESSION_ID_COOKIE = "RSESSIONID";
+	private String cookiesDomain;
 	private RedisSimpleTempalte redisClient[];
 	private IRedisSessionLoadBalance loadBalance;
 	//Session最大更新间隔时间
@@ -123,7 +125,15 @@ public class RedisSessionManager {
         Cookie[] cookies = request.getCookies();
         if(cookies == null || cookies.length==0)return null;
         for(Cookie cookie: cookies){
-            if(SESSION_ID_COOKIE.equals(cookie.getName()))return cookie.getValue();
+            if(SESSION_ID_COOKIE.equals(cookie.getName())){
+				String decryptId =  null;
+				try {
+					 decryptId = AES.Decrypt(cookie.getValue(),AES.cKey);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return decryptId;
+			}
         }
         return null;
     }
@@ -164,8 +174,12 @@ public class RedisSessionManager {
         session.setListener(new SessionListener(){
             public void onInvalidated(RedisHttpSession session) {
             	//设置客户端Cookies过期
-                saveCookie(session, request, response);
-                //保存Redis中的Session信息
+				try {
+					saveCookie(session, request, response);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				//保存Redis中的Session信息
                 saveSession(session);
             }
         });
@@ -200,7 +214,11 @@ public class RedisSessionManager {
 		session.creationTime = System.currentTimeMillis();
 		session.maxInactiveInterval = this.sessionTimeOut;
 		session.isNew = true;
-		saveCookie(session, request, response);
+		try {
+			saveCookie(session, request, response);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return session;
 	}
 
@@ -208,17 +226,22 @@ public class RedisSessionManager {
 		return UUID.randomUUID().toString().replace("-", "").toUpperCase();
 	}
 
-    private void saveCookie(RedisHttpSession session, HttpServletRequestWrapper request, HttpServletResponse response) {
+    private void saveCookie(RedisHttpSession session, HttpServletRequestWrapper request, HttpServletResponse response) throws Exception {
         if (session.isNew == false && session.expired == false) return;
 
         Cookie cookie = new Cookie(SESSION_ID_COOKIE, null);
-        cookie.setPath(request.getContextPath());
+        cookie.setPath("/");
         //如果Session过期则Cookies也过期
         if(session.expired){
             cookie.setMaxAge(0);
         //如果Session是新生成的，则需要在客户端设置SessionID
         }else if (session.isNew){
-            cookie.setValue(session.getId());
+			String encryptId = AES.Encrypt(session.getId(),AES.cKey);
+            //cookie.setValue(session.getId());
+			cookie.setValue(encryptId);
+		}
+		if(StringUtils.isNotBlank(cookiesDomain)){
+			cookie.setDomain(cookiesDomain);
 		}
         response.addCookie(cookie);
     }
@@ -252,5 +275,14 @@ public class RedisSessionManager {
 
 	private static String generatorSessionKey(String sessionId) {
 		return SESSION_ID_PREFIX.concat(sessionId);
+	}
+
+	public String getCookiesDomain() {
+		return cookiesDomain;
+	}
+
+	public RedisSessionManager setCookiesDomain(String cookiesDomain) {
+		this.cookiesDomain = cookiesDomain;
+		return this;
 	}
 }

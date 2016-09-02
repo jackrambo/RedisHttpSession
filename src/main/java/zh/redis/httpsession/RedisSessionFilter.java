@@ -20,12 +20,14 @@ public class RedisSessionFilter implements Filter {
 		String host = filterConfig.getInitParameter("host");
 		String loadBalanceClass = filterConfig.getInitParameter("loadBalanceClass");
 		String sessionTimeOutStr = filterConfig.getInitParameter("sessionTimeOut");
-		
+		String cookiesDomain = filterConfig.getInitParameter("cookiesDomain");
+
 		if(sessionTimeOutStr == null)
 			sessionTimeOutStr = "1800";
 		int sessionTimeOut = Integer.parseInt(sessionTimeOutStr);
 //		CacheUtil.initCache(sessionTimeOut);
 		this.sessionManager = new RedisSessionManager(host, port,sessionTimeOut,loadBalanceClass);
+		this.sessionManager.setCookiesDomain(cookiesDomain);
 	}
 
 	public void setSessionManager(RedisSessionManager sessionManager) {
